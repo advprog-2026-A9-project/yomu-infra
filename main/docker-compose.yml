@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  main-db:
+    image: postgres:15-alpine
+    container_name: yomu-db-main
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: yomudb_main
+      POSTGRES_USER: yomu_main_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - main_postgres_data:/var/lib/postgresql/data
+    networks:
+      - yomu-main-network
+
+  main-backend:
+    image: openjdk:21-slim
+    container_name: yomu-backend-main
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/yomudb_main
+      - SPRING_DATASOURCE_USERNAME=yomu_main_user
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - FRONTEND_URL=https://yomu.info
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - main-db
+    networks:
+      - yomu-main-network
+
+volumes:
+  main_postgres_data:
+
+networks:
+  yomu-main-network:
+    driver: bridge

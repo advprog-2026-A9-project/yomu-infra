@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  staging-db:
+    image: postgres:16-alpine
+    container_name: yomu-db-staging
+    environment:
+      POSTGRES_DB: ${STAGE_DB_NAME}
+      POSTGRES_USER: ${STAGE_DB_USER}
+      POSTGRES_PASSWORD: ${STAGE_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - staging_db_data:/var/lib/postgresql/data
+    networks:
+      - yomu-staging-network
+
+  staging-backend:
+    build:
+      context: ./yomu-backend
+      dockerfile: Dockerfile
+    container_name: yomu-backend-staging
+    restart: always
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://staging-db:5432/${STAGE_DB_NAME}
+      - DB_USERNAME=${STAGE_DB_USER}
+      - DB_PASSWORD=${STAGE_DB_PASSWORD}
+      - PORT=8080
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - APP_CORS_ALLOWED_ORIGINS=${STAGE_CORS_ORIGINS}
+      - FRONTEND_URL=${FRONTEND_URL}
+    depends_on:
+      - staging-db
+    networks:
+      - yomu-staging-network
+
+  staging-adminer:
+    image: adminer:latest
+    container_name: yomu-adminer-staging
+    restart: always
+    ports:
+      - "8082:8080"
+    networks:
+      - yomu-staging-network
+
+  staging-frontend:
+    environment:
+      - FRONTEND_URL=${FRONTEND_URL}
+    build:
+      context: ./yomu-frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://api-staging.yomu.info
+    container_name: yomu-frontend-staging
+    restart: always
+    ports:
+      - "3001:80"
+    networks:
+      - yomu-staging-network
+
+  staging-prometheus:
+    image: prom/prometheus:latest
+    container_name: yomu-prometheus-staging
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - staging_prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - staging-backend
+    networks:
+      - yomu-staging-network
+
+  staging-grafana:
+    image: grafana/grafana:latest
+    container_name: yomu-grafana-staging
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    volumes:
+      - staging_grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin} # Gunakan variabel env atau default
+    networks:
+      - yomu-staging-network
+
+volumes:
+  staging_db_data:
+  staging_prometheus_data:
+  staging_grafana_data:
+
+networks:
+  yomu-staging-network:
+    driver: bridge

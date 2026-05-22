@@ -1,0 +1,16 @@
+# Mengabaikan file environment asli yang berisi password/secret asli
+.env
+*.env
+
+# Mengabaikan file kunci private key AWS / SSH
+*.pem
+*.key
+
+# Mengabaikan folder data volume Docker agar storage lokal/database tidak ikut ter-push
+**/postgres_data/
+**/prometheus_data/
+**/grafana_data/
+
+# OS files
+.DS_Store
+Thumbs.db
