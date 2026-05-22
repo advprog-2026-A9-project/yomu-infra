@@ -17,7 +17,7 @@ services:
 
   staging-backend:
     build:
-      context: ./yomu-backend
+      context: ../../yomu-backend
       dockerfile: Dockerfile
     container_name: yomu-backend-staging
     restart: always
