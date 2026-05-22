@@ -63,6 +63,19 @@ services:
     networks:
       - yomu-main-network
 
+  main-frontend:
+    build:
+      context: ../../yomu-frontend-main
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://api.yomu.info
+    container_name: yomu-frontend-main
+    restart: always
+    ports:
+      - "3000:80"
+    networks:
+      - yomu-main-network
+
 volumes:
   main_postgres_data:
   main_prometheus_data:
