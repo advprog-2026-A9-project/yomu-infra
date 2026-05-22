@@ -89,6 +89,16 @@ services:
     networks:
       - yomu-staging-network
 
+
+  staging-pyroscope:
+    image: grafana/pyroscope:latest
+    container_name: yomu-pyroscope-staging
+    restart: unless-stopped
+    ports:
+      - "4040:4040"
+    networks:
+      - yomu-staging-network
+
 volumes:
   staging_db_data:
   staging_prometheus_data:
