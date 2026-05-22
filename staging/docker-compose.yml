@@ -51,7 +51,7 @@ services:
     environment:
       - FRONTEND_URL=${FRONTEND_URL}
     build:
-      context: ./yomu-frontend
+      context: ../../yomu-frontend
       dockerfile: Dockerfile
       args:
         - VITE_API_BASE_URL=https://api-staging.yomu.info
