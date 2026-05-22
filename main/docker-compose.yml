@@ -6,10 +6,10 @@ services:
     container_name: yomu-db-main
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "5434:5432"
     environment:
       POSTGRES_DB: yomudb_main
-      POSTGRES_USER: yomu_main_user
+      POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - main_postgres_data:/var/lib/postgresql/data
@@ -17,15 +17,18 @@ services:
       - yomu-main-network
 
   main-backend:
-    image: openjdk:21-slim
+    build:
+      context: ../../yomu-backend-main
+      dockerfile: Dockerfile
     container_name: yomu-backend-main
-    restart: unless-stopped
+    restart: always
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/yomudb_main
-      - SPRING_DATASOURCE_USERNAME=yomu_main_user
-      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://main-db:5432/yomudb_main
+      - DB_USERNAME=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - FRONTEND_URL=https://yomu.info
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
@@ -35,8 +38,35 @@ services:
     networks:
       - yomu-main-network
 
+  main-prometheus:
+    image: prom/prometheus:latest
+    container_name: yomu-prometheus-main
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - main_prometheus_data:/prometheus
+    ports:
+      - "9091:9090"
+    networks:
+      - yomu-main-network
+
+  main-grafana:
+    image: grafana/grafana:latest
+    container_name: yomu-grafana-main
+    restart: unless-stopped
+    ports:
+      - "3003:3000"
+    volumes:
+      - main_grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    networks:
+      - yomu-main-network
+
 volumes:
   main_postgres_data:
+  main_prometheus_data:
+  main_grafana_data:
 
 networks:
   yomu-main-network:
