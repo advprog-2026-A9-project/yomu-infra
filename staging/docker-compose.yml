@@ -33,6 +33,8 @@ services:
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - APP_CORS_ALLOWED_ORIGINS=${STAGE_CORS_ORIGINS}
       - FRONTEND_URL=${FRONTEND_URL}
+      - PYROSCOPE_SERVER_ADDRESS=http://staging-pyroscope:4040
+      - PYROSCOPE_APPLICATION_NAME=yomu-backend-staging
     depends_on:
       - staging-db
     networks:
