@@ -17,7 +17,7 @@ services:
 
   staging-backend:
     build:
-      context: ../../yomu-backend
+      context: ../../yomu-backend-staging
       dockerfile: Dockerfile
     container_name: yomu-backend-staging
     restart: always
@@ -51,7 +51,7 @@ services:
     environment:
       - FRONTEND_URL=${FRONTEND_URL}
     build:
-      context: ../../yomu-frontend
+      context: ../../yomu-frontend-staging
       dockerfile: Dockerfile
       args:
         - VITE_API_BASE_URL=https://api-staging.yomu.info
